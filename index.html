@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mood-Adaptive Study Planner | Personalized Learning</title>
+    <meta name="description" content="An AI-powered study planner that adapts to your knowledge level and emotional state.">
+    <!-- Google Fonts: Outfit & Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;900&family=Outfit:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <!-- Link styles -->
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div id="app" class="app-container">
+        <!-- Main Dashboard Header -->
+        <header class="main-header">
+            <div class="logo">
+                <span class="logo-icon">🧠</span>
+                <span class="logo-text">MindFlow</span>
+            </div>
+            <div id="user-mood-indicator" class="mood-badge">
+                <span>✨</span> Checking Vibe...
+            </div>
+        </header>
+
+        <main class="dashboard-grid">
+            <!-- Sidebar: Mood Selection & Global Action -->
+            <aside class="sidebar section-card">
+                <h2>How are you feeling?</h2>
+                <p class="subtitle">Your mood shapes your study path today. We'll adapt to your energy.</p>
+                <div id="mood-selector" class="mood-grid">
+                    <!-- Mood buttons will be injected dynamically -->
+                </div>
+                
+                <div style="margin-top: 2.5rem; border-top: 1px solid var(--glass-border); padding-top: 2rem; display: flex; justify-content: space-between; align-items: center;">
+                    <p class="subtitle" style="margin: 0; font-size: 0.8rem;">Need a fresh start?</p>
+                    <button id="clear-data-btn" class="clear-btn" title="Reset all tasks to defaults">Reset Data</button>
+                </div>
+            </aside>
+
+            <!-- Main Content: Schedule & Custom Input -->
+            <section class="main-content section-card">
+                <div class="header-row">
+                    <h2>Your Adaptive Schedule</h2>
+                    <div class="header-actions">
+                        <span id="ai-status" class="status-chip">AI Analysis Active</span>
+                    </div>
+                </div>
+                
+                <div id="schedule-container" class="schedule-list">
+                    <!-- Schedule items will be injected here -->
+                </div>
+
+                <!-- Add Custom Task Form -->
+                <form id="add-task-form" class="add-task-form" title="Add a custom task to this mood">
+                    <div class="form-group">
+                        <input type="time" id="input-time" class="add-task-input time-input" required>
+                    </div>
+                    <div class="form-group" style="flex: 2;">
+                        <input type="text" id="input-task" class="add-task-input" placeholder="Task Name (e.g. Read Chapter 5)" required>
+                    </div>
+                    <div class="form-group" style="flex: 3;">
+                        <input type="text" id="input-desc" class="add-task-input" placeholder="Short description (optional)">
+                    </div>
+                    <button type="submit" class="btn-primary">Add Task</button>
+                </form>
+            </section>
+
+            <!-- Bottom Stats Section -->
+            <section class="stats-section section-card">
+                <h2>Performance Tracking</h2>
+                <p class="subtitle" style="margin-top: -0.5rem; margin-bottom: 0;">Watch your mastery grow based on daily completion.</p>
+                
+                <div class="stats-grid">
+                    <div class="stat-item">
+                        <div class="stat-header">
+                            <span class="stat-label">Daily Focus Score</span>
+                            <span id="focus-percentage" class="stat-percentage">0%</span>
+                        </div>
+                        <div class="progress-bar">
+                            <div id="focus-progress" class="fill" style="width: 0%;"></div>
+                        </div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-header">
+                            <span class="stat-label">Overall Knowledge Link</span>
+                            <span id="knowledge-percentage" class="stat-percentage">0%</span>
+                        </div>
+                        <div class="progress-bar">
+                            <div id="knowledge-progress" class="fill" style="width: 0%;"></div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <footer class="app-footer">
+            <p>&copy; 2026 Mood-Adaptive Learning Systems. Designed for Excellence.</p>
+        </footer>
+    </div>
+
+    <!-- Script Application Logic -->
+    <script src="app.js"></script>
+</body>
+</html>
