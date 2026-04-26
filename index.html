@@ -20,8 +20,22 @@
                 <span class="logo-icon">🧠</span>
                 <span class="logo-text">Syncora</span>
             </div>
-            <div id="user-mood-indicator" class="mood-badge">
-                <span>✨</span> Checking Vibe...
+            <div class="header-right">
+                <div class="vibe-input-wrapper">
+                    <input type="text" id="vibe-text-input" placeholder="How's your vibe today? (e.g. 'Ready to crush it!')" title="AI will analyze your sentiment">
+                </div>
+                <div class="header-toggles">
+                    <div class="exam-mode-toggle">
+                        <label class="switch">
+                            <input type="checkbox" id="exam-mode-checkbox">
+                            <span class="slider round"></span>
+                        </label>
+                        <span class="toggle-label">EXAM MODE</span>
+                    </div>
+                    <div id="user-mood-indicator" class="mood-badge">
+                        <span>✨</span> Checking Vibe...
+                    </div>
+                </div>
             </div>
         </header>
 
@@ -30,13 +44,80 @@
             <aside class="sidebar section-card">
                 <h2>How are you feeling?</h2>
                 <p class="subtitle">Your mood shapes your study path today. We'll adapt to your energy.</p>
-                <div id="mood-selector" class="mood-grid">
+                <div id="mood-selector" class="mood-grid-2x2">
                     <!-- Mood buttons will be injected dynamically -->
                 </div>
+
+                <!-- Not sure where to start / Ask Me Bar -->
+                <div class="ask-me-section">
+                    <button id="ask-doubt-btn" class="ask-me-bar">
+                        <div class="ask-me-content">
+                            <span class="icon">🤔</span>
+                            <div class="text-group">
+                                <span class="primary-text">Not sure where to start?</span>
+                                <span class="secondary-text">ASK ME</span>
+                            </div>
+                        </div>
+                        <span class="sparkle">✨</span>
+                    </button>
+                    <div id="doubt-input-container" class="doubt-input-wrapper hidden">
+                        <input type="text" id="doubt-input" placeholder="Ask about your mood or where to start...">
+                        <button id="send-doubt-btn">Send</button>
+                    </div>
+                </div>
+
+                <!-- Pomodoro Timer Section -->
+                <div class="pomodoro-section">
+                    <div class="timer-display">
+                        <span id="timer-minutes">25</span>:<span id="timer-seconds">00</span>
+                    </div>
+                    <div class="timer-label" id="timer-type">Focus Time</div>
+                    <div class="timer-controls">
+                        <button id="timer-start" class="timer-btn primary">Start</button>
+                        <button id="timer-pause" class="timer-btn">Pause</button>
+                        <button id="timer-reset" class="timer-btn">Reset</button>
+                    </div>
+                    <div class="timer-settings">
+                        <span id="timer-mode-desc">Mode: Standard (25/5)</span>
+                    </div>
+                </div>
+
+                <!-- Ambience Section -->
+                <div class="ambience-section">
+                    <div class="ambience-header">
+                        <span class="icon">🎵</span> Mood Ambience
+                    </div>
+                    <div class="ambience-controls">
+                        <button id="ambience-toggle" class="ambience-btn">Play Atmosphere</button>
+                        <input type="range" id="ambience-volume" min="0" max="1" step="0.1" value="0.5">
+                    </div>
+                    <div id="ambience-track-name" class="track-name">Select a vibe...</div>
+                </div>
+
+                <!-- Health Data Simulation -->
+                <div class="health-sync-section">
+                    <button id="sync-health-btn" class="health-btn">
+                        <span class="icon">⌚</span> Sync Wearable Data
+                    </button>
+                    <div id="health-stats" class="health-stats hidden">
+                        <span>Sleep: <b id="sleep-score">--</b></span>
+                        <span>Recovery: <b id="recovery-score">--</b></span>
+                    </div>
+                </div>
                 
-                <div style="margin-top: 2.5rem; border-top: 1px solid var(--glass-border); padding-top: 2rem; display: flex; justify-content: space-between; align-items: center;">
-                    <p class="subtitle" style="margin: 0; font-size: 0.8rem;">Need a fresh start?</p>
-                    <button id="clear-data-btn" class="clear-btn" title="Reset all tasks to defaults">Reset Data</button>
+                <div style="margin-top: 1.5rem; border-top: 1px solid var(--glass-border); padding-top: 1.5rem; display: flex; flex-direction: column; gap: 0.75rem;">
+                    <div style="display: flex; gap: 0.5rem;">
+                        <button id="open-syllabus-btn" class="btn-secondary" style="flex: 1;">
+                            <span class="icon">📚</span> Syllabus
+                        </button>
+                        <button id="add-subject-sidebar-btn" class="btn-secondary" style="padding: 0.75rem 1rem;" title="Add New Subject">
+                            <span class="icon">➕</span>
+                        </button>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <p class="subtitle" style="margin: 0; font-size: 0.8rem;">Need a fresh start?</p>
+                        <button id="clear-data-btn" class="clear-btn" title="Reset all tasks to defaults">Reset Data</button>
+                    </div>
                 </div>
             </aside>
 
@@ -48,31 +129,63 @@
                         <span id="ai-status" class="status-chip">AI Analysis Active</span>
                     </div>
                 </div>
+
+                <!-- AI Study Buddy Bubble -->
+                <div id="ai-buddy-container" class="ai-buddy-card">
+                    <div class="buddy-avatar">🤖</div>
+                    <div class="buddy-content">
+                        <div class="buddy-label">Syncora AI</div>
+                        <p id="ai-buddy-message">Analyzing your energy... Let's find the best way to study today.</p>
+                    </div>
+                </div>
                 
                 <div id="schedule-container" class="schedule-list">
                     <!-- Schedule items will be injected here -->
                 </div>
 
                 <!-- Add Custom Task Form -->
-                <form id="add-task-form" class="add-task-form" title="Add a custom task to this mood">
-                    <div class="form-group">
-                        <input type="time" id="input-time" class="add-task-input time-input" required>
-                    </div>
-                    <div class="form-group" style="flex: 2;">
-                        <input type="text" id="input-task" class="add-task-input" placeholder="Task Name (e.g. Read Chapter 5)" required>
-                    </div>
-                    <div class="form-group" style="flex: 3;">
-                        <input type="text" id="input-desc" class="add-task-input" placeholder="Short description (optional)">
-                    </div>
-                    <button type="submit" class="btn-primary">Add Task</button>
-                </form>
+                <div id="task-form-overlay" class="task-form-overlay">
+                    <form id="add-task-form" class="add-task-form" title="Add a custom task to this mood">
+                        <div class="form-header">
+                            <h3>Add New Task</h3>
+                            <button type="button" id="close-form-btn" class="close-btn">✕</button>
+                        </div>
+                        <div class="form-body">
+                            <div class="form-group">
+                                <label for="input-time">Time</label>
+                                <input type="time" id="input-time" class="add-task-input time-input" required>
+                            </div>
+                            <div class="form-group" style="flex: 2;">
+                                <label for="input-task">Task Title</label>
+                                <input type="text" id="input-task" class="add-task-input" placeholder="e.g. Read Chapter 5" required>
+                            </div>
+                            <div class="form-group" style="flex: 3;">
+                                <label for="input-desc">Description</label>
+                                <input type="text" id="input-desc" class="add-task-input" placeholder="Short description (optional)">
+                            </div>
+                            <button type="submit" class="btn-primary">Add Task</button>
+                        </div>
+                    </form>
+                </div>
             </section>
 
             <!-- Bottom Stats Section -->
             <section class="stats-section section-card">
-                <h2>Performance Tracking</h2>
-                <p class="subtitle" style="margin-top: -0.5rem; margin-bottom: 0;">Watch your mastery grow based on daily completion.</p>
+                <div class="header-row">
+                    <div>
+                        <h2>Mastery Tracking</h2>
+                        <p class="subtitle" style="margin-top: -0.5rem; margin-bottom: 0;">Your 30-day consistency heatmap.</p>
+                    </div>
+                    <div class="streak-badge">
+                        <span class="icon">🔥</span> <span id="streak-count">0</span> Day Streak
+                    </div>
+                </div>
                 
+                <!-- Knowledge Heatmap Container -->
+                <div id="knowledge-heatmap" class="heatmap-grid">
+                    <!-- Days injected here -->
+                </div>
+
                 <div class="stats-grid">
                     <div class="stat-item">
                         <div class="stat-header">
@@ -95,13 +208,61 @@
                 </div>
             </section>
         </main>
-
         <footer class="app-footer">
-            <p>&copy; 2026 Mood-Adaptive Learning Systems. Designed for Excellence.</p>
+            <p>&copy; 2026 Syncora Mood-Adaptive Learning Systems. | <span id="boot-status">Initializing...</span> | <a href="#" onclick="forceReset()" style="color: var(--accent-primary); text-decoration: none; font-size: 0.7rem;">Emergency Reset</a></p>
         </footer>
-    </div>
 
-    <!-- Script Application Logic -->
+        <!-- Floating Action Button for Mobile -->
+        <button id="mobile-add-btn" class="fab-btn" title="Add New Task">+</button>
+
+        <!-- Syllabus & Exam Modal -->
+        <div id="syllabus-modal" class="setup-overlay hidden">
+            <div class="setup-card syllabus-card">
+                <div class="setup-header">
+                    <span class="setup-icon">🧠</span>
+                    <h1 id="modal-title">Syllabus Intelligence</h1>
+                    <p id="modal-desc">Paste your syllabus text or document content below. Our AI will categorize chapters by complexity.</p>
+                </div>
+                <div class="setup-body">
+                    <div class="setup-input-group">
+                        <label for="syllabus-subject-select">Select Subject</label>
+                        <select id="syllabus-subject-select" class="add-task-input"></select>
+                    </div>
+                    <div id="exam-date-group" class="setup-input-group hidden">
+                        <label for="exam-date-input">Exam Date</label>
+                        <input type="date" id="exam-date-input" class="add-task-input">
+                    </div>
+                    <div class="setup-input-group">
+                        <label>Paste Syllabus Content (PDF/Doc Text)</label>
+                        <textarea id="syllabus-text-input" placeholder="e.g.&#10;Chapter 1: Quantum Mechanics&#10;Chapter 2: Relativity..."></textarea>
+                    </div>
+                    <div class="modal-footer">
+                        <button id="close-syllabus-btn" class="btn-secondary">Close</button>
+                        <button id="analyze-syllabus-btn" class="btn-primary">Analyze & Dive Deeper</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Initial Setup Wizard -->
+        <div id="setup-wizard" class="setup-overlay hidden">
+            <div class="setup-card">
+                <div class="setup-header">
+                    <span class="setup-icon">🎓</span>
+                    <h1>Welcome to Syncora</h1>
+                    <p>Tell us what you're studying this semester, and we'll build your personalized mood-adaptive plan.</p>
+                </div>
+                <div class="setup-body">
+                    <div class="setup-input-group">
+                        <label>Your Subjects (one per line)</label>
+                        <textarea id="setup-subjects" placeholder="e.g.&#10;Mathematics&#10;Computer Science&#10;Digital Marketing"></textarea>
+                    </div>
+                    <button id="start-journey-btn" class="btn-primary setup-start-btn" onclick="finishSetup()">Generate My Plan</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Script Application Logic -->
     <script src="app.js"></script>
 </body>
 </html>
