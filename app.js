@@ -45,7 +45,8 @@ let appState = {
     examMode: {
         active: false,
         date: null
-    }
+    },
+    isLoggedIn: false
 };
 
 let timerState = {
@@ -68,10 +69,20 @@ function init() {
     try {
         loadState();
         
+        // Login Logic
+        const loginModal = document.getElementById('login-modal');
+        if (loginModal) {
+            if (!appState.isLoggedIn) {
+                loginModal.classList.remove('hidden');
+            } else {
+                loginModal.classList.add('hidden');
+            }
+        }
+
         // Setup Wizard logic
         const setupWizard = document.getElementById('setup-wizard');
         if (setupWizard) {
-            if (!appState.subjects || appState.subjects.length === 0) {
+            if (appState.isLoggedIn && (!appState.subjects || appState.subjects.length === 0)) {
                 setupWizard.classList.remove('hidden');
             } else {
                 setupWizard.classList.add('hidden');
@@ -111,7 +122,9 @@ function attachEventListeners() {
     const timerReset = document.getElementById('timer-reset');
     const ambienceToggle = document.getElementById('ambience-toggle');
     const ambienceVolume = document.getElementById('ambience-volume');
+    const loginForm = document.getElementById('login-form');
 
+    if (loginForm) loginForm.onsubmit = handleLogin;
     if (clearBtn) clearBtn.onclick = clearData;
     if (addTaskForm) addTaskForm.onsubmit = handleAddTask;
     
@@ -264,6 +277,43 @@ window.forceReset = function() {
     localStorage.removeItem('moodPlannerState');
     location.reload();
 };
+
+window.logout = function() {
+    appState.isLoggedIn = false;
+    saveState();
+    location.reload();
+};
+
+/**
+ * Login Logic
+ */
+function handleLogin(e) {
+    e.preventDefault();
+    const email = document.getElementById('login-email').value;
+    const password = document.getElementById('login-password').value;
+    const errorEl = document.getElementById('login-error');
+    const loginModal = document.getElementById('login-modal');
+    const setupWizard = document.getElementById('setup-wizard');
+
+    // Specified Credentials: user@gmail.com / user1234
+    if (email === 'user@gmail.com' && password === 'user1234') {
+        appState.isLoggedIn = true;
+        saveState();
+        
+        if (loginModal) loginModal.classList.add('hidden');
+        
+        // Show wizard if no subjects yet
+        if (!appState.subjects || appState.subjects.length === 0) {
+            if (setupWizard) setupWizard.classList.remove('hidden');
+        }
+        
+        if (errorEl) errorEl.style.display = 'none';
+        console.log("Syncora: Login Successful");
+    } else {
+        if (errorEl) errorEl.style.display = 'block';
+        console.warn("Syncora: Login Failed - Invalid Credentials");
+    }
+}
 
 /**
  * Setup Wizard

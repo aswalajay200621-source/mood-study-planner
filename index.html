@@ -209,7 +209,7 @@
             </section>
         </main>
         <footer class="app-footer">
-            <p>&copy; 2026 Syncora Mood-Adaptive Learning Systems. | <span id="boot-status">Initializing...</span> | <a href="#" onclick="forceReset()" style="color: var(--accent-primary); text-decoration: none; font-size: 0.7rem;">Emergency Reset</a></p>
+            <p>&copy; 2026 Syncora Mood-Adaptive Learning Systems. | <span id="boot-status">Initializing...</span> | <a href="#" onclick="logout()" style="color: var(--accent-primary); text-decoration: none; font-size: 0.7rem; margin-right: 0.5rem;">Logout</a> | <a href="#" onclick="forceReset()" style="color: var(--accent-primary); text-decoration: none; font-size: 0.7rem;">Emergency Reset</a></p>
         </footer>
 
         <!-- Floating Action Button for Mobile -->
@@ -241,6 +241,29 @@
                         <button id="analyze-syllabus-btn" class="btn-primary">Analyze & Dive Deeper</button>
                     </div>
                 </div>
+            </div>
+        </div>
+
+        <!-- Login Modal -->
+        <div id="login-modal" class="setup-overlay">
+            <div class="setup-card">
+                <div class="setup-header">
+                    <span class="setup-icon">🔐</span>
+                    <h1>Welcome Back</h1>
+                    <p>Log in to access your personalized study planner.</p>
+                </div>
+                <form id="login-form" class="setup-body">
+                    <div class="setup-input-group">
+                        <label for="login-email">Email Address</label>
+                        <input type="email" id="login-email" class="add-task-input" placeholder="user@gmail.com" required style="background-image: none;">
+                    </div>
+                    <div class="setup-input-group">
+                        <label for="login-password">Password</label>
+                        <input type="password" id="login-password" class="add-task-input" placeholder="••••••••" required style="background-image: none;">
+                    </div>
+                    <button type="submit" class="btn-primary setup-start-btn">Unlock My Planner</button>
+                    <p id="login-error" style="color: #ef4444; margin-top: 1rem; font-size: 0.9rem; display: none;">Invalid email or password. Please try again.</p>
+                </form>
             </div>
         </div>
 
