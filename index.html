@@ -20,11 +20,15 @@
                 <span class="logo-icon">🧠</span>
                 <span class="logo-text">Syncora</span>
             </div>
+            <div id="slogan-display" class="slogan-container">
+                <!-- Slogan will be injected here -->
+            </div>
             <div class="header-right">
                 <div class="vibe-input-wrapper">
                     <input type="text" id="vibe-text-input" placeholder="How's your vibe today? (e.g. 'Ready to crush it!')" title="AI will analyze your sentiment">
                 </div>
                 <div class="header-toggles">
+                    <button onclick="logout()" class="btn-secondary" style="padding: 0.5rem 0.75rem; font-size: 0.7rem; white-space: nowrap;">Logout</button>
                     <div class="exam-mode-toggle">
                         <label class="switch">
                             <input type="checkbox" id="exam-mode-checkbox">
@@ -249,20 +253,28 @@
             <div class="setup-card">
                 <div class="setup-header">
                     <span class="setup-icon">🔐</span>
-                    <h1>Welcome Back</h1>
-                    <p>Log in to access your personalized study planner.</p>
+                    <h1 id="login-title">Welcome Back</h1>
+                    <p id="login-subtitle">Log in to access your personalized study planner.</p>
                 </div>
                 <form id="login-form" class="setup-body">
                     <div class="setup-input-group">
                         <label for="login-email">Email Address</label>
-                        <input type="email" id="login-email" class="add-task-input" placeholder="user@gmail.com" required style="background-image: none;">
+                        <input type="email" id="login-email" class="add-task-input" placeholder="e.g. anne@gmail.com" required style="background-image: none;">
                     </div>
                     <div class="setup-input-group">
-                        <label for="login-password">Password</label>
-                        <input type="password" id="login-password" class="add-task-input" placeholder="••••••••" required style="background-image: none;">
+                        <label for="login-password" id="password-label">Password</label>
+                        <div class="password-wrapper">
+                            <input type="password" id="login-password" class="add-task-input" placeholder="••••••••" required style="background-image: none;">
+                            <button type="button" id="toggle-password" class="eye-btn" title="Toggle Password Visibility">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="eye-icon"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                            </button>
+                        </div>
                     </div>
-                    <button type="submit" class="btn-primary setup-start-btn">Unlock My Planner</button>
+                    <button type="submit" id="login-submit-btn" class="btn-primary setup-start-btn">Unlock My Planner</button>
                     <p id="login-error" style="color: #ef4444; margin-top: 1rem; font-size: 0.9rem; display: none;">Invalid email or password. Please try again.</p>
+                    <div style="margin-top: 1.5rem; text-align: center;">
+                        <a href="#" onclick="forceReset()" style="color: var(--text-muted); text-decoration: none; font-size: 0.8rem; opacity: 0.7; hover: {opacity: 1}">Forgot password? Reset System</a>
+                    </div>
                 </form>
             </div>
         </div>
@@ -281,6 +293,9 @@
                         <textarea id="setup-subjects" placeholder="e.g.&#10;Mathematics&#10;Computer Science&#10;Digital Marketing"></textarea>
                     </div>
                     <button id="start-journey-btn" class="btn-primary setup-start-btn" onclick="finishSetup()">Generate My Plan</button>
+                    <div style="margin-top: 1.5rem; text-align: center;">
+                        <button type="button" class="btn-secondary" onclick="logout()" style="width: 100%;">Login with another account</button>
+                    </div>
                 </div>
             </div>
         </div>

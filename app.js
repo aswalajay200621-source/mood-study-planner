@@ -35,19 +35,85 @@ const BUDDY_MESSAGES = {
     tired: "Low energy detected. Let's stick to passive learning—watch videos or use flashcards. Don't push too hard."
 };
 
-// Global State
-let appState = {
+const ALLOWED_USERS = ["anne@gmail.com", "abijith@gmail.com", "adwaith@gmail.com", "rizwan@gmail.com"];
+
+const OPENAI_API_KEY = "REPLACE_WITH_YOUR_KEY"; // Removed for security during push
+
+const SLOGANS = [
+    "Believe in yourself and all that you are.", "Every day is a new beginning.", "Your only limit is you.",
+    "Focus on the goal, not the obstacle.", "Success starts with self-discipline.", "Be the change you wish to see in the world.",
+    "Dream big, work hard, stay focused.", "Great things never come from comfort zones.", "Don't stop until you're proud.",
+    "Every accomplishment starts with the decision to try.", "Stay positive, work hard, make it happen.", "Success is a journey, not a destination.",
+    "Your hard work will pay off.", "Keep going, you're getting there.", "Small steps lead to big changes.",
+    "Confidence is the key to success.", "Challenge yourself every single day.", "Persistence overrides resistance.",
+    "Make today so awesome yesterday gets jealous.", "Discipline is the bridge between goals and accomplishment.",
+    "The secret of getting ahead is getting started.", "It always seems impossible until it's done.",
+    "Don't watch the clock; do what it does. Keep going.", "The harder you work for something, the greater you'll feel when you achieve it.",
+    "Dream it. Wish it. Do it.", "Success doesn't just find you. You have to go out and get it.",
+    "The key to success is to focus on goals, not obstacles.", "Wake up with determination. Go to bed with satisfaction.",
+    "Do something today that your future self will thank you for.", "Little things make big days.",
+    "It's going to be hard, but hard does not mean impossible.", "Don't wait for opportunity. Create it.",
+    "Sometimes we're tested not to show our weaknesses, but to discover our strengths.", "The only way to do great work is to love what you do.",
+    "Even the greatest was once a beginner. Don't be afraid to take that first step.", "Your time is limited, don't waste it living someone else's life.",
+    "Push yourself, because no one else is going to do it for you.", "Great things take time.",
+    "Be so good they can't ignore you.", "Success is what happens after you have survived all your mistakes.",
+    "Work hard in silence, let your success be your noise.", "A journey of a thousand miles begins with a single step.",
+    "Don't let yesterday take up too much of today.", "You learn more from failure than from success.",
+    "If you're going through hell, keep going.", "Success is not final, failure is not fatal: it is the courage to continue that counts.",
+    "I find that the harder I work, the more luck I seem to have.", "All our dreams can come true if we have the courage to pursue them.",
+    "Opportunities don't happen. You create them.", "I never dreamed about success, I worked for it.",
+    "The way to get started is to quit talking and begin doing.", "Success is not the key to happiness. Happiness is the key to success.",
+    "Don't be afraid to give up the good to go for the great.", "I attribute my success to this: I never gave or took any excuse.",
+    "The difference between who you are and who you want to be is what you do.", "Setting goals is the first step in turning the invisible into the visible.",
+    "You don't have to be great to start, but you have to start to be great.", "Action is the foundational key to all success.",
+    "If you want to achieve greatness stop asking for permission.", "Things work out best for those who make the best of how things work out.",
+    "To live a creative life, we must lose our fear of being wrong.", "If you are not willing to risk the usual you will have to settle for the ordinary.",
+    "Trust because you are willing to accept the risk, not because it's safe or certain.", "All progress takes place outside the comfort zone.",
+    "The number one reason people fail in life is because they listen to their friends, family, and neighbors.",
+    "In order to succeed, your desire for success should be greater than your fear of failure.",
+    "A successful man is one who can lay a firm foundation with the bricks others have thrown at him.",
+    "Success is walking from failure to failure with no loss of enthusiasm.",
+    "Develop success from failures. Discouragement and failure are two of the surest stepping stones to success.",
+    "Failure is the condiment that gives success its flavor.",
+    "There are no secrets to success. It is the result of preparation, hard work, and learning from failure.",
+    "Success is not just about what you accomplish in your life; it's about what you inspire others to do.",
+    "Success is liked by many, but achieved by few who are willing to work for it.",
+    "If you really want to do something, you'll find a way. If you don't, you'll find an excuse.",
+    "Don't be pushed around by the fears in your mind. Be led by the dreams in your heart.",
+    "The only limit to our realization of tomorrow will be our doubts of today.", "The future depends on what you do today.",
+    "Keep your face always toward the sunshine—and shadows will fall behind you.", "The best way to predict your future is to create it.",
+    "Success is to be measured not so much by the position that one has reached in life as by the obstacles which he has overcome.",
+    "Believe you can and you're halfway there.", "Don't let the noise of others' opinions drown out your own inner voice.",
+    "If you want to fly, give up everything that weighs you down.",
+    "What you get by achieving your goals is not as important as what you become by achieving your goals.",
+    "Always do your best. What you plant now, you will harvest later.", "Don't be discouraged. It's often the last key in the bunch that opens the lock.",
+    "Hardships often prepare ordinary people for an extraordinary destiny.", "Your passion is waiting for your courage to catch up.",
+    "If you can dream it, you can do it.", "Go confidently in the direction of your dreams. Live the life you have imagined.",
+    "The only person you are destined to become is the person you decide to be.", "Everything you've ever wanted is on the other side of fear.",
+    "Start where you are. Use what you have. Do what you can.", "Fall seven times, stand up eight.",
+    "The mind is everything. What you think you become.", "The best time to plant a tree was 20 years ago. The second best time is now.",
+    "An unexamined life is not worth living.", "Eighty percent of success is showing up.",
+    "Your time is limited, so don't waste it living someone else's life.", "Winning isn't everything, but wanting to win is.",
+    "I am not a product of my circumstances. I am a product of my decisions.",
+    "Every child is an artist. The problem is how to remain an artist once he grows up.",
+    "You can never cross the ocean until you have the courage to lose sight of the shore.",
+    "The two most important days in your life are the day you are born and the day you find out why."
+];
+
+// Global state template for new users
+const DEFAULT_STATE = {
     currentMood: 'happy',
     subjects: [],
     schedules: {},
     history: {},
-    syllabi: {}, // { subject: [ { title, hardness, completed } ] }
-    examMode: {
-        active: false,
-        date: null
-    },
-    isLoggedIn: false
+    syllabi: {},
+    examMode: { active: false, date: null },
+    isLoggedIn: false, // Default is NOT logged in
+    userEmail: null
 };
+
+// Global State
+let appState = { ...DEFAULT_STATE };
 
 let timerState = {
     minutes: 25,
@@ -65,10 +131,18 @@ let currentAudio = null;
 function init() {
     console.log("Syncora: Initializing components...");
     const bootStatus = document.getElementById('boot-status');
-    
+
     try {
+        // Legacy Cleanup
+        ['moodPlannerState', 'moodPlannerState_user@gmail.com', 'moodPlannerState_null'].forEach(key => {
+            if (localStorage.getItem(key)) {
+                localStorage.removeItem(key);
+                console.log(`Syncora: Legacy data '${key}' cleared.`);
+            }
+        });
+
         loadState();
-        
+
         // Login Logic
         const loginModal = document.getElementById('login-modal');
         if (loginModal) {
@@ -94,6 +168,7 @@ function init() {
         detectTimeBasedMood();
         checkForQuickWin();
         updateApp(appState.currentMood, true);
+        showRandomSlogan();
 
         attachEventListeners();
 
@@ -123,11 +198,59 @@ function attachEventListeners() {
     const ambienceToggle = document.getElementById('ambience-toggle');
     const ambienceVolume = document.getElementById('ambience-volume');
     const loginForm = document.getElementById('login-form');
+    const togglePasswordBtn = document.getElementById('toggle-password');
+    const loginEmailInput = document.getElementById('login-email');
 
     if (loginForm) loginForm.onsubmit = handleLogin;
+
+    if (togglePasswordBtn) {
+        togglePasswordBtn.onclick = () => {
+            const pwdInput = document.getElementById('login-password');
+            const type = pwdInput.getAttribute('type') === 'password' ? 'text' : 'password';
+            pwdInput.setAttribute('type', type);
+            togglePasswordBtn.innerHTML = type === 'password' ?
+                '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="eye-icon"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>' :
+                '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="eye-icon"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>';
+        };
+    }
+
+    if (loginEmailInput) {
+        loginEmailInput.oninput = (e) => {
+            const email = e.target.value.toLowerCase().trim();
+            const passwordHint = document.getElementById('password-hint');
+            const passwordLabel = document.getElementById('password-label');
+            const loginBtn = document.getElementById('login-submit-btn');
+            const loginTitle = document.getElementById('login-title');
+            const loginSubtitle = document.getElementById('login-subtitle');
+
+            if (ALLOWED_USERS.includes(email)) {
+                const users = JSON.parse(localStorage.getItem('moodPlannerUsers') || '{}');
+                if (!users[email]) {
+                    // Password creation mode
+                    if (loginTitle) loginTitle.textContent = "Create Account";
+                    if (loginSubtitle) loginSubtitle.textContent = "Welcome! Set a password for your new account.";
+                    if (passwordLabel) passwordLabel.textContent = "Set Password";
+                    if (passwordHint) passwordHint.style.display = 'block';
+                    if (loginBtn) loginBtn.textContent = 'Register & Unlock';
+                } else {
+                    // Normal login mode
+                    if (loginTitle) loginTitle.textContent = "Welcome Back";
+                    if (loginSubtitle) loginSubtitle.textContent = "Log in to access your personalized study planner.";
+                    if (passwordLabel) passwordLabel.textContent = "Password";
+                    if (passwordHint) passwordHint.style.display = 'none';
+                    if (loginBtn) loginBtn.textContent = 'Unlock My Planner';
+                }
+            } else {
+                if (passwordHint) passwordHint.style.display = 'none';
+                if (passwordLabel) passwordLabel.textContent = 'Password';
+                if (loginBtn) loginBtn.textContent = 'Unlock My Planner';
+            }
+        };
+    }
+
     if (clearBtn) clearBtn.onclick = clearData;
     if (addTaskForm) addTaskForm.onsubmit = handleAddTask;
-    
+
     if (vibeTextInput) {
         vibeTextInput.onkeypress = (e) => {
             if (e.key === 'Enter') analyzeVibe(e.target.value);
@@ -247,12 +370,20 @@ function attachEventListeners() {
  */
 function loadState() {
     try {
-        const saved = localStorage.getItem('moodPlannerState');
-        if (saved) {
-            const parsed = JSON.parse(saved);
-            // Deep merge defaults with saved data
-            appState = { ...appState, ...parsed };
-            console.log("Syncora: State loaded from storage");
+        const userEmail = localStorage.getItem('moodPlannerActiveUser');
+        if (userEmail) {
+            const saved = localStorage.getItem(`moodPlannerState_${userEmail}`);
+            if (saved && saved !== "undefined" && saved !== "null") {
+                const parsed = JSON.parse(saved);
+                if (parsed && typeof parsed === 'object') {
+                    appState = { ...DEFAULT_STATE, ...parsed, isLoggedIn: true, userEmail: userEmail };
+                    console.log(`Syncora: State loaded for ${userEmail}`);
+                    return;
+                }
+            }
+            // If no valid state found, initialize as new logged-in user
+            appState = { ...DEFAULT_STATE, userEmail: userEmail, isLoggedIn: true };
+            console.log(`Syncora: New user session for ${userEmail}`);
         }
     } catch (e) {
         console.warn("Syncora: Failed to load state", e);
@@ -261,7 +392,10 @@ function loadState() {
 
 function saveState() {
     try {
-        localStorage.setItem('moodPlannerState', JSON.stringify(appState));
+        if (appState.userEmail) {
+            localStorage.setItem('moodPlannerActiveUser', appState.userEmail);
+            localStorage.setItem(`moodPlannerState_${appState.userEmail}`, JSON.stringify(appState));
+        }
     } catch (e) {
         console.error("Syncora: Failed to save state", e);
     }
@@ -273,14 +407,17 @@ function clearData() {
     }
 }
 
-window.forceReset = function() {
-    localStorage.removeItem('moodPlannerState');
-    location.reload();
+window.forceReset = function () {
+    if (confirm("This will clear ALL users and ALL study plans. Are you sure you want to reset the system?")) {
+        localStorage.clear();
+        location.reload();
+    }
 };
 
-window.logout = function() {
+window.logout = function () {
+    localStorage.removeItem('moodPlannerActiveUser');
     appState.isLoggedIn = false;
-    saveState();
+    appState.userEmail = null;
     location.reload();
 };
 
@@ -289,36 +426,105 @@ window.logout = function() {
  */
 function handleLogin(e) {
     e.preventDefault();
-    const email = document.getElementById('login-email').value;
-    const password = document.getElementById('login-password').value;
+    console.log("Syncora: Login attempt...");
+    const emailInput = document.getElementById('login-email');
+    const passwordInput = document.getElementById('login-password');
     const errorEl = document.getElementById('login-error');
-    const loginModal = document.getElementById('login-modal');
-    const setupWizard = document.getElementById('setup-wizard');
 
-    // Specified Credentials: user@gmail.com / user1234
-    if (email === 'user@gmail.com' && password === 'user1234') {
+    if (!emailInput || !passwordInput) {
+        console.error("Syncora: Login inputs not found!");
+        return;
+    }
+
+    const email = emailInput.value.toLowerCase().trim();
+    const password = passwordInput.value;
+
+    if (!ALLOWED_USERS.includes(email)) {
+        console.warn(`Syncora: Unauthorized email attempt: ${email}`);
+        if (errorEl) {
+            errorEl.textContent = "This email is not authorized to access Syncora.";
+            errorEl.style.display = 'block';
+        }
+        return;
+    }
+
+    try {
+        let users = {};
+        try {
+            const savedUsers = localStorage.getItem('moodPlannerUsers');
+            if (savedUsers) users = JSON.parse(savedUsers);
+        } catch (err) {
+            console.error("Syncora: Failed to parse user database, resetting...", err);
+            users = {};
+        }
+
+        // Case 1: First-time user (Registration)
+        if (!users[email]) {
+            console.log(`Syncora: Registering new user: ${email}`);
+            if (password.length < 4) {
+                if (errorEl) {
+                    errorEl.textContent = "Please create a password with at least 4 characters.";
+                    errorEl.style.display = 'block';
+                }
+                return;
+            }
+            users[email] = password;
+            localStorage.setItem('moodPlannerUsers', JSON.stringify(users));
+            completeLogin(email);
+        }
+        // Case 2: Returning user (Verification)
+        else {
+            console.log(`Syncora: Verifying returning user: ${email}`);
+            if (users[email] === password) {
+                completeLogin(email);
+            } else {
+                console.warn("Syncora: Incorrect password");
+                if (errorEl) {
+                    errorEl.innerHTML = "Incorrect password. <br><span style='font-size: 0.8rem; opacity: 0.8;'>If you forgot it, click 'Reset System' below.</span>";
+                    errorEl.style.display = 'block';
+                }
+            }
+        }
+    } catch (error) {
+        console.error("Syncora: Critical Login Error", error);
+        if (errorEl) {
+            errorEl.textContent = "System error during login. Please try again.";
+            errorEl.style.display = 'block';
+        }
+    }
+}
+
+function completeLogin(email) {
+    try {
+        console.log(`Syncora: Completing login for ${email}`);
+        localStorage.setItem('moodPlannerActiveUser', email);
+        // Explicitly update and save state before reload
+        appState.userEmail = email;
         appState.isLoggedIn = true;
         saveState();
         
-        if (loginModal) loginModal.classList.add('hidden');
-        
-        // Show wizard if no subjects yet
-        if (!appState.subjects || appState.subjects.length === 0) {
-            if (setupWizard) setupWizard.classList.remove('hidden');
-        }
-        
-        if (errorEl) errorEl.style.display = 'none';
-        console.log("Syncora: Login Successful");
-    } else {
-        if (errorEl) errorEl.style.display = 'block';
-        console.warn("Syncora: Login Failed - Invalid Credentials");
+        // Small delay to ensure storage writes complete in all browsers
+        setTimeout(() => {
+            location.reload();
+        }, 100);
+    } catch (e) {
+        console.error("Syncora: Failed to complete login", e);
+        alert("Storage error. Please check if cookies/storage are enabled.");
+    }
+}
+
+function showRandomSlogan() {
+    const sloganEl = document.getElementById('slogan-display');
+    if (sloganEl) {
+        const randomSlogan = SLOGANS[Math.floor(Math.random() * SLOGANS.length)];
+        sloganEl.textContent = `"${randomSlogan}"`;
     }
 }
 
 /**
  * Setup Wizard
  */
-window.finishSetup = function() {
+window.finishSetup = function () {
     const subjectsEl = document.getElementById('setup-subjects');
     const startBtn = document.getElementById('start-journey-btn');
     const wizard = document.getElementById('setup-wizard');
@@ -339,15 +545,15 @@ window.finishSetup = function() {
             const subjects = text.split('\n').map(s => s.trim()).filter(s => s.length > 0);
             appState.subjects = subjects;
             appState.currentMood = 'happy';
-            
+
             generateDynamicSchedules(subjects);
             saveState();
-            
+
             if (wizard) wizard.classList.add('hidden');
-            
+
             renderMoodButtons();
             updateApp('happy', true);
-            
+
             console.log("Syncora: Setup Complete");
         } catch (err) {
             console.error("Syncora: Setup Error", err);
@@ -376,12 +582,12 @@ function generateDynamicSchedules(subjects) {
         const today = new Date();
         const examDate = new Date(appState.examMode.date);
         const daysLeft = Math.max(1, Math.ceil((examDate - today) / (1000 * 60 * 60 * 24)));
-        
+
         let totalRemainingChapters = 0;
         Object.values(appState.syllabi).forEach(chapters => {
             totalRemainingChapters += chapters.filter(c => !c.completed).length;
         });
-        
+
         chaptersPerDay = Math.ceil(totalRemainingChapters / daysLeft);
         console.log(`Exam Mode: ${daysLeft} days left. Chapters/day: ${chaptersPerDay}`);
     }
@@ -389,11 +595,11 @@ function generateDynamicSchedules(subjects) {
     moods.forEach(mood => {
         appState.schedules[mood] = [];
         const moodTimes = times[mood];
-        
+
         moodTimes.forEach((time, index) => {
             const subject = subjects[index % subjects.length];
             const syllabus = appState.syllabi[subject] || [];
-            
+
             // Try to find a real chapter from the syllabus
             let chapter = null;
             if (syllabus.length > 0) {
@@ -410,26 +616,26 @@ function generateDynamicSchedules(subjects) {
             let desc = "";
             const taskLabel = chapter ? `Chapter: ${chapter.title}` : subject;
 
-            switch(mood) {
-                case 'motivated': 
-                    task = `Hard ${taskLabel} Session`; 
-                    desc = chapter ? `Deep dive into the complexity of ${chapter.title}.` : "Solve complex problems and advance mastery."; 
+            switch (mood) {
+                case 'motivated':
+                    task = `Hard ${taskLabel} Session`;
+                    desc = chapter ? `Deep dive into the complexity of ${chapter.title}.` : "Solve complex problems and advance mastery.";
                     break;
-                case 'focused': 
-                    task = `Deep Dive: ${taskLabel}`; 
-                    desc = "Uninterrupted focus session. High output expected."; 
+                case 'focused':
+                    task = `Deep Dive: ${taskLabel}`;
+                    desc = "Uninterrupted focus session. High output expected.";
                     break;
-                case 'stressed': 
-                    task = `Light ${taskLabel} Review`; 
-                    desc = "Just read the summary or look at diagrams."; 
+                case 'stressed':
+                    task = `Light ${taskLabel} Review`;
+                    desc = "Just read the summary or look at diagrams.";
                     break;
-                case 'tired': 
-                    task = `${taskLabel} Video/Podcast`; 
-                    desc = "Passive learning while you recover energy."; 
+                case 'tired':
+                    task = `${taskLabel} Video/Podcast`;
+                    desc = "Passive learning while you recover energy.";
                     break;
-                case 'happy': 
-                    task = `${taskLabel} Exploration`; 
-                    desc = "Creative work or collaborative learning."; 
+                case 'happy':
+                    task = `${taskLabel} Exploration`;
+                    desc = "Creative work or collaborative learning.";
                     break;
             }
 
@@ -488,9 +694,9 @@ function handleSyllabusAnalysis() {
 
     appState.syllabi[subject] = chapters;
     saveState();
-    
+
     alert(`AI Analysis Complete: Found ${chapters.length} chapters for ${subject}. Your schedule has been updated with real chapters!`);
-    
+
     document.getElementById('syllabus-modal').classList.add('hidden');
     generateDynamicSchedules(appState.subjects);
     updateApp(appState.currentMood, true);
@@ -520,7 +726,7 @@ function updateApp(moodId, isInit = false) {
 
     appState.currentMood = moodId;
     saveState();
-    
+
     // Update Active Buttons
     document.querySelectorAll('.mood-btn').forEach(btn => btn.classList.remove('active'));
     const activeBtn = document.getElementById(`btn-${moodId}`);
@@ -529,7 +735,7 @@ function updateApp(moodId, isInit = false) {
     // Update Header Indicator
     const indicator = document.getElementById('user-mood-indicator');
     if (indicator) indicator.innerHTML = `<span>${moodData.emoji}</span> Feeling ${moodData.label}`;
-    
+
     const aiStatus = document.getElementById('ai-status');
     if (!isInit && aiStatus) {
         aiStatus.textContent = "AI Re-Calculating...";
@@ -566,7 +772,7 @@ function renderSchedule(moodId) {
         const isActive = isTaskActive(item.time);
         const div = document.createElement('div');
         div.className = `schedule-item ${item.completed ? 'completed' : ''} ${isActive ? 'active-now' : ''}`;
-        
+
         div.innerHTML = `
             <div class="checkbox-wrapper">
                 <input type="checkbox" ${item.completed ? 'checked' : ''} onchange="toggleTask('${moodId}', '${item.id}')">
@@ -594,8 +800,8 @@ function isTaskActive(taskTime) {
     const [h, m] = taskTime.split(':');
     const taskDate = new Date();
     taskDate.setHours(parseInt(h), parseInt(m), 0);
-    
-    const diff = (now - taskDate) / (1000 * 60); 
+
+    const diff = (now - taskDate) / (1000 * 60);
     return diff >= 0 && diff < 60;
 }
 
@@ -617,7 +823,7 @@ function parseLinks(text) {
 /**
  * Task Management
  */
-window.toggleTask = function(moodId, taskId) {
+window.toggleTask = function (moodId, taskId) {
     const tasks = appState.schedules[moodId];
     if (!tasks) return;
     const task = tasks.find(t => t.id === taskId);
@@ -631,7 +837,7 @@ window.toggleTask = function(moodId, taskId) {
     }
 };
 
-window.deleteTask = function(moodId, taskId) {
+window.deleteTask = function (moodId, taskId) {
     if (!appState.schedules[moodId]) return;
     appState.schedules[moodId] = appState.schedules[moodId].filter(t => t.id !== taskId);
     saveState();
@@ -659,11 +865,11 @@ function handleAddTask(e) {
     if (!appState.schedules[moodId]) appState.schedules[moodId] = [];
     appState.schedules[moodId].push(newTask);
     appState.schedules[moodId].sort((a, b) => a.time.localeCompare(b.time));
-    
+
     saveState();
     renderSchedule(moodId);
     updateStats();
-    
+
     e.target.reset();
     const overlay = document.getElementById('task-form-overlay');
     if (overlay) overlay.classList.remove('active');
@@ -686,7 +892,7 @@ function updateStats() {
     const tasks = appState.schedules[appState.currentMood] || [];
     const completedTasks = tasks.filter(t => t.completed).length;
     const percentage = tasks.length === 0 ? 0 : Math.round((completedTasks / tasks.length) * 100);
-    
+
     let totalAll = 0, completedAll = 0;
     Object.values(appState.schedules).forEach(list => {
         totalAll += list.length;
@@ -710,7 +916,7 @@ function updateStats() {
 function calculateStreak() {
     const el = document.getElementById('streak-count');
     if (!el || !appState.history) return;
-    
+
     let streak = 0;
     const today = new Date();
     for (let i = 0; i < 365; i++) {
@@ -766,19 +972,22 @@ function analyzeVibe(text) {
     }
 }
 
-function handleDoubt() {
+async function handleDoubt() {
     const inputEl = document.getElementById('doubt-input');
     const buddyMsg = document.getElementById('ai-buddy-message');
+    const spinner = document.getElementById('ai-response-spinner');
+
     if (!inputEl || !inputEl.value.trim() || !buddyMsg) return;
 
-    const query = inputEl.value.toLowerCase();
+    const query = inputEl.value;
     inputEl.value = '';
 
-    // Simulate AI Thinking
-    buddyMsg.textContent = "Syncora AI is analyzing your sentiment and schedule...";
-    
-    setTimeout(() => {
-        // 1. Check for Mood Intent (Auto-Switch)
+    // Show loading state
+    buddyMsg.textContent = "Syncora AI is thinking...";
+    if (spinner) spinner.classList.remove('hidden');
+
+    try {
+        // 1. Mood Detection Logic (Client-side fast path)
         const moodMappings = {
             tired: ['tired', 'sleepy', 'exhausted', 'drain', 'low energy', 'rest'],
             stressed: ['stressed', 'anxious', 'overwhelmed', 'too much', 'panic'],
@@ -787,35 +996,73 @@ function handleDoubt() {
             happy: ['happy', 'good', 'great', 'fine']
         };
 
-        let autoSwitched = false;
         for (const [mood, keywords] of Object.entries(moodMappings)) {
-            if (keywords.some(k => query.includes(k))) {
+            if (keywords.some(k => query.toLowerCase().includes(k))) {
                 updateApp(mood);
-                buddyMsg.textContent = `Syncora Advisor: I detected you're feeling ${mood}. I've automatically recalculated your schedule for '${mood}' mode. Let's adjust our goals accordingly.`;
-                autoSwitched = true;
+                // We'll still call the AI but with context that we switched mood
                 break;
             }
         }
 
-        if (autoSwitched) return;
+        // 2. Call OpenAI API
+        const response = await callChatGPT(query);
 
-        // 2. Otherwise, give guidance
-        const tasks = appState.schedules[appState.currentMood] || [];
-        const firstIncomplete = tasks.find(t => !t.completed);
-        const moodData = MOODS.find(m => m.id === appState.currentMood);
-
-        if (query.includes('start') || query.includes('what') || query.includes('where')) {
-            if (firstIncomplete) {
-                buddyMsg.textContent = `Syncora Advisor: Right now, I recommend starting with '${firstIncomplete.task}'. In your current ${moodData.label} state, this will give you the best momentum.`;
-            } else {
-                buddyMsg.textContent = "Syncora Advisor: You've finished your current plan! Why not take a 15-minute break or add a creative exploration task?";
-            }
+        if (response) {
+            buddyMsg.textContent = response;
         } else {
-            // Generic but smarter fallback
-            const subjectsStr = appState.subjects.join(', ');
-            buddyMsg.textContent = `Syncora Advisor: I see you're thinking about your ${subjectsStr} studies. Given it's ${new Date().getHours()}:00, staying in ${moodData.label} mode is my best recommendation. Try focusing on the '${firstIncomplete ? firstIncomplete.task : 'next available goal'}'.`;
+            throw new Error("Empty response from AI");
         }
-    }, 800);
+
+    } catch (error) {
+        console.error("AI Error:", error);
+        buddyMsg.textContent = "Syncora Advisor: I'm having trouble connecting to my brain right now. Please check your API key or connection.";
+    } finally {
+        if (spinner) spinner.classList.add('hidden');
+    }
+}
+
+async function callChatGPT(prompt) {
+    if (OPENAI_API_KEY === "YOUR_OPENAI_API_KEY_HERE") {
+        return "Please set your OpenAI API Key in app.js to enable real ChatGPT answers! 🧠";
+    }
+
+    const API_URL = "https://api.openai.com/v1/chat/completions";
+
+    const systemPrompt = `
+        You are Syncora AI, a helpful study assistant. 
+        The user is currently studying these subjects: ${appState.subjects.join(', ')}.
+        Their current mood is: ${appState.currentMood}.
+        Current schedule tasks: ${JSON.stringify(appState.schedules[appState.currentMood])}.
+        
+        Provide a concise, motivating, and helpful answer. If they ask about what to study, refer to their schedule.
+    `;
+
+    try {
+        const response = await fetch(API_URL, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${OPENAI_API_KEY}`
+            },
+            body: JSON.stringify({
+                model: "gpt-3.5-turbo",
+                messages: [
+                    { role: "system", content: systemPrompt },
+                    { role: "user", content: prompt }
+                ],
+                temperature: 0.7
+            })
+        });
+
+        const data = await response.json();
+        if (data.choices && data.choices[0].message.content) {
+            return data.choices[0].message.content;
+        }
+        return null;
+    } catch (e) {
+        console.error("OpenAI API Call Failed", e);
+        return null;
+    }
 }
 
 function detectTimeBasedMood() {
@@ -839,20 +1086,8 @@ function simulateHealthSync() {
 }
 
 function checkForQuickWin() {
-    const today = new Date().toISOString().split('T')[0];
-    if (!appState.history[today] || appState.history[today] === 0) {
-        Object.keys(appState.schedules).forEach(m => {
-            if (appState.schedules[m].length > 0 && !appState.schedules[m][0].task.includes("Quick Win")) {
-                appState.schedules[m].unshift({
-                    id: `qw-${Date.now()}`,
-                    time: 'ASAP',
-                    task: "⭐ Quick Win: 5-min Review",
-                    desc: "An easy task to boost confidence.",
-                    completed: false
-                });
-            }
-        });
-    }
+    // Disabled for a completely fresh/clean app experience as requested
+    console.log("Syncora: Quick Win check skipped for clean experience.");
 }
 
 /**
