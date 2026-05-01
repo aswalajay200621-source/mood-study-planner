@@ -128,12 +128,12 @@ let currentAudio = null;
 /**
  * Robust Initialization
  */
-function init() {
+async function init() {
     console.log("Syncora: Initializing components...");
     const bootStatus = document.getElementById('boot-status');
 
     try {
-        // Legacy Cleanup
+        // Legacy Cleanup (localStorage)
         ['moodPlannerState', 'moodPlannerState_user@gmail.com', 'moodPlannerState_null'].forEach(key => {
             if (localStorage.getItem(key)) {
                 localStorage.removeItem(key);
@@ -141,7 +141,7 @@ function init() {
             }
         });
 
-        loadState();
+        await loadState();
 
         // Login Logic
         const loginModal = document.getElementById('login-modal');
@@ -215,7 +215,7 @@ function attachEventListeners() {
     }
 
     if (loginEmailInput) {
-        loginEmailInput.oninput = (e) => {
+        loginEmailInput.oninput = async (e) => {
             const email = e.target.value.toLowerCase().trim();
             const passwordHint = document.getElementById('password-hint');
             const passwordLabel = document.getElementById('password-label');
@@ -224,21 +224,27 @@ function attachEventListeners() {
             const loginSubtitle = document.getElementById('login-subtitle');
 
             if (ALLOWED_USERS.includes(email)) {
-                const users = JSON.parse(localStorage.getItem('moodPlannerUsers') || '{}');
-                if (!users[email]) {
-                    // Password creation mode
-                    if (loginTitle) loginTitle.textContent = "Create Account";
-                    if (loginSubtitle) loginSubtitle.textContent = "Welcome! Set a password for your new account.";
-                    if (passwordLabel) passwordLabel.textContent = "Set Password";
-                    if (passwordHint) passwordHint.style.display = 'block';
-                    if (loginBtn) loginBtn.textContent = 'Register & Unlock';
-                } else {
-                    // Normal login mode
-                    if (loginTitle) loginTitle.textContent = "Welcome Back";
-                    if (loginSubtitle) loginSubtitle.textContent = "Log in to access your personalized study planner.";
-                    if (passwordLabel) passwordLabel.textContent = "Password";
-                    if (passwordHint) passwordHint.style.display = 'none';
-                    if (loginBtn) loginBtn.textContent = 'Unlock My Planner';
+                try {
+                    const res = await fetch(`/api/check-user?email=${encodeURIComponent(email)}`);
+                    const { exists } = await res.json();
+                    
+                    if (!exists) {
+                        // Password creation mode
+                        if (loginTitle) loginTitle.textContent = "Create Account";
+                        if (loginSubtitle) loginSubtitle.textContent = "Welcome! Set a password for your new account.";
+                        if (passwordLabel) passwordLabel.textContent = "Set Password";
+                        if (passwordHint) passwordHint.style.display = 'block';
+                        if (loginBtn) loginBtn.textContent = 'Register & Unlock';
+                    } else {
+                        // Normal login mode
+                        if (loginTitle) loginTitle.textContent = "Welcome Back";
+                        if (loginSubtitle) loginSubtitle.textContent = "Log in to access your personalized study planner.";
+                        if (passwordLabel) passwordLabel.textContent = "Password";
+                        if (passwordHint) passwordHint.style.display = 'none';
+                        if (loginBtn) loginBtn.textContent = 'Unlock My Planner';
+                    }
+                } catch (err) {
+                    console.error("Syncora: Failed to check user", err);
                 }
             } else {
                 if (passwordHint) passwordHint.style.display = 'none';
@@ -366,38 +372,47 @@ function attachEventListeners() {
 }
 
 /**
- * Data Persistence
+ * Data Persistence via Local API
  */
-function loadState() {
+async function loadState() {
     try {
         const userEmail = localStorage.getItem('moodPlannerActiveUser');
         if (userEmail) {
-            const saved = localStorage.getItem(`moodPlannerState_${userEmail}`);
-            if (saved && saved !== "undefined" && saved !== "null") {
-                const parsed = JSON.parse(saved);
-                if (parsed && typeof parsed === 'object') {
+            const res = await fetch('/api/state', {
+                headers: { 'x-user-email': userEmail }
+            });
+            if (res.ok) {
+                const parsed = await res.json();
+                if (parsed && typeof parsed === 'object' && Object.keys(parsed).length > 0) {
                     appState = { ...DEFAULT_STATE, ...parsed, isLoggedIn: true, userEmail: userEmail };
-                    console.log(`Syncora: State loaded for ${userEmail}`);
+                    console.log(`Syncora: State loaded from DB for ${userEmail}`);
                     return;
                 }
             }
-            // If no valid state found, initialize as new logged-in user
+            // Fallback for new users
             appState = { ...DEFAULT_STATE, userEmail: userEmail, isLoggedIn: true };
-            console.log(`Syncora: New user session for ${userEmail}`);
+            console.log(`Syncora: Initializing new DB session for ${userEmail}`);
         }
     } catch (e) {
-        console.warn("Syncora: Failed to load state", e);
+        console.warn("Syncora: Failed to load state from DB", e);
     }
 }
 
-function saveState() {
+async function saveState() {
     try {
         if (appState.userEmail) {
             localStorage.setItem('moodPlannerActiveUser', appState.userEmail);
-            localStorage.setItem(`moodPlannerState_${appState.userEmail}`, JSON.stringify(appState));
+            await fetch('/api/state', {
+                method: 'POST',
+                headers: { 
+                    'Content-Type': 'application/json',
+                    'x-user-email': appState.userEmail 
+                },
+                body: JSON.stringify(appState)
+            });
         }
     } catch (e) {
-        console.error("Syncora: Failed to save state", e);
+        console.error("Syncora: Failed to save state to DB", e);
     }
 }
 
@@ -422,9 +437,9 @@ window.logout = function () {
 };
 
 /**
- * Login Logic
+ * Login Logic via Local API
  */
-function handleLogin(e) {
+async function handleLogin(e) {
     e.preventDefault();
     console.log("Syncora: Login attempt...");
     const emailInput = document.getElementById('login-email');
@@ -449,46 +464,26 @@ function handleLogin(e) {
     }
 
     try {
-        let users = {};
-        try {
-            const savedUsers = localStorage.getItem('moodPlannerUsers');
-            if (savedUsers) users = JSON.parse(savedUsers);
-        } catch (err) {
-            console.error("Syncora: Failed to parse user database, resetting...", err);
-            users = {};
-        }
+        const res = await fetch('/api/login', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email, password })
+        });
 
-        // Case 1: First-time user (Registration)
-        if (!users[email]) {
-            console.log(`Syncora: Registering new user: ${email}`);
-            if (password.length < 4) {
-                if (errorEl) {
-                    errorEl.textContent = "Please create a password with at least 4 characters.";
-                    errorEl.style.display = 'block';
-                }
-                return;
-            }
-            users[email] = password;
-            localStorage.setItem('moodPlannerUsers', JSON.stringify(users));
+        if (res.ok) {
+            const data = await res.json();
             completeLogin(email);
-        }
-        // Case 2: Returning user (Verification)
-        else {
-            console.log(`Syncora: Verifying returning user: ${email}`);
-            if (users[email] === password) {
-                completeLogin(email);
-            } else {
-                console.warn("Syncora: Incorrect password");
-                if (errorEl) {
-                    errorEl.innerHTML = "Incorrect password. <br><span style='font-size: 0.8rem; opacity: 0.8;'>If you forgot it, click 'Reset System' below.</span>";
-                    errorEl.style.display = 'block';
-                }
+        } else {
+            const errData = await res.json().catch(() => ({}));
+            if (errorEl) {
+                errorEl.innerHTML = (errData.error || "Incorrect password") + ". <br><span style='font-size: 0.8rem; opacity: 0.8;'>Check credentials and try again.</span>";
+                errorEl.style.display = 'block';
             }
         }
     } catch (error) {
         console.error("Syncora: Critical Login Error", error);
         if (errorEl) {
-            errorEl.textContent = "System error during login. Please try again.";
+            errorEl.textContent = "System error during login. Make sure the server is running.";
             errorEl.style.display = 'block';
         }
     }
@@ -498,12 +493,7 @@ function completeLogin(email) {
     try {
         console.log(`Syncora: Completing login for ${email}`);
         localStorage.setItem('moodPlannerActiveUser', email);
-        // Explicitly update and save state before reload
-        appState.userEmail = email;
-        appState.isLoggedIn = true;
-        saveState();
-        
-        // Small delay to ensure storage writes complete in all browsers
+        // Page reload will trigger init() which calls loadState() to fetch from DB
         setTimeout(() => {
             location.reload();
         }, 100);
